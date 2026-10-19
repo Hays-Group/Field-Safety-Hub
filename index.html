@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Field Safety</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦺</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3f4f1;
+    --surface: #ffffff;
+    --ink: #1f2326;
+    --muted: #5a6268;
+    --line: #d4d8d4;
+    --hazard: #d9480f;
+    --hazard-press: #b23a0a;
+    --on-hazard: #ffffff;
+    --stripe-a: #fcc419;
+    --stripe-b: #1f2326;
+    --aid: #2b8a3e;
+    --aid-press: #237032;
+    --on-aid: #ffffff;
+    --notice: #1864ab;
+    --focus: #1864ab;
+    --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
+    --body: "Barlow", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #15181a;
+      --surface: #1e2326;
+      --ink: #eceeec;
+      --muted: #a2aab0;
+      --line: #343a3e;
+      --hazard: #e8590c;
+      --hazard-press: #c94d0a;
+      --aid: #2f9e44;
+      --aid-press: #278a3a;
+      --notice: #74c0fc;
+      --focus: #74c0fc;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1.125rem;
+    line-height: 1.45;
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+
+  .wrap { max-width: 34rem; margin: 0 auto; padding: 0 1.125rem; }
+
+  /* ---------- Code screen ---------- */
+  .gate {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem 0;
+  }
+  .gate-band {
+    height: 0.875rem;
+    background: repeating-linear-gradient(-45deg, var(--stripe-a) 0 14px, var(--stripe-b) 14px 28px);
+    margin-bottom: 2rem;
+  }
+  .gate-logo { width: 7rem; height: 7rem; border-radius: 8px; display: block; margin-bottom: 1.25rem; }
+  .gate h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 2.75rem;
+    line-height: 1;
+    margin: 0 0 0.5rem;
+  }
+  .gate p { margin: 0 0 1.5rem; color: var(--muted); }
+  .gate label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .code-input {
+    width: 100%;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 2.75rem;
+    letter-spacing: 0.5em;
+    text-align: center;
+    padding: 0.5rem 0 0.5rem 0.5em;
+    border: 3px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .code-input:focus { border-color: var(--focus); outline: none; }
+  .gate-error {
+    min-height: 1.5em;
+    margin: 0.75rem 0;
+    color: var(--hazard);
+    font-weight: 600;
+  }
+  .btn-primary {
+    display: block;
+    width: 100%;
+    min-height: 3.75rem;
+    border: 0;
+    border-radius: 6px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  .gate-lang { margin-top: 1.5rem; text-align: center; }
+
+  /* ---------- Hub ---------- */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0 0.75rem;
+  }
+  .topbar .brand {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.375rem;
+    line-height: 1.1;
+  }
+  .link-btn {
+    background: none;
+    border: 0;
+    padding: 0.5rem 0.25rem;
+    min-height: 2.75rem;
+    color: var(--notice);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  /* Report a hazard: the one loud thing on the page */
+  .hazard {
+    display: flex;
+    align-items: stretch;
+    margin: 0.5rem 0 0.5rem;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--hazard);
+    color: var(--on-hazard);
+    text-decoration: none;
+    min-height: 8.5rem;
+  }
+  .hazard:active { background: var(--hazard-press); }
+  .hazard-stripe {
+    flex: 0 0 1.25rem;
+    background: repeating-linear-gradient(-45deg, var(--stripe-a) 0 12px, var(--stripe-b) 12px 24px);
+  }
+  .hazard-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.25rem 1.25rem 1.25rem 1.125rem;
+  }
+  .hazard-title {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+  .hazard-sub { margin-top: 0.5rem; font-weight: 500; }
+  .hazard-note { color: var(--muted); font-size: 1rem; margin: 0 0 0.5rem; }
+
+  section { padding: 1.75rem 0 0.5rem; }
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.75rem;
+    line-height: 1.1;
+    margin: 0 0 0.25rem;
+  }
+  .section-note { color: var(--muted); margin: 0 0 0.75rem; font-size: 1rem; }
+
+  /* Who to call */
+  .calls { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .calls li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .call-text { flex: 1; min-width: 0; }
+  .call-label { font-weight: 600; }
+  .call-name { color: var(--muted); }
+  .call-note { font-size: 1rem; color: var(--muted); margin-top: 0.125rem; }
+  .call-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 6rem;
+    min-height: 3.5rem;
+    padding: 0 1rem;
+    border-radius: 6px;
+    background: var(--aid);
+    color: var(--on-aid);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.375rem;
+    text-decoration: none;
+  }
+  .call-btn:active { background: var(--aid-press); }
+  .call-btn.urgent { background: var(--hazard); }
+  .call-btn.urgent:active { background: var(--hazard-press); }
+
+  /* Plain link rows */
+  .rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .rows a, .rows .row-off {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 3.75rem;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+  .rows a .row-title { font-weight: 600; }
+  .rows .row-sub { display: block; font-size: 1rem; color: var(--muted); }
+  .rows a::after {
+    content: "";
+    flex: 0 0 0.75rem;
+    height: 0.75rem;
+    border-top: 3px solid var(--notice);
+    border-right: 3px solid var(--notice);
+    transform: rotate(45deg);
+    margin-right: 0.375rem;
+  }
+  .row-off { color: var(--muted); }
+
+  /* Company tiles */
+  .companies {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  .company {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.625rem;
+    padding: 1rem 0.75rem;
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .company:active { border-color: var(--ink); }
+  .logo-box {
+    width: 100%;
+    height: 4.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border-radius: 4px;
+  }
+  .logo-box img { max-width: 90%; max-height: 4rem; object-fit: contain; }
+  .logo-fallback {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.75rem;
+    color: #1f2326;
+  }
+  .company-name { font-weight: 600; font-size: 1rem; line-height: 1.25; }
+
+  /* Company document sheet */
+  dialog.sheet {
+    width: 100%;
+    max-width: 34rem;
+    margin: auto auto 0;
+    padding: 0;
+    border: 0;
+    border-radius: 12px 12px 0 0;
+    background: var(--surface);
+    color: var(--ink);
+    max-height: 88vh;
+  }
+  dialog.sheet::backdrop { background: rgba(0, 0, 0, 0.55); }
+  @media (prefers-reduced-motion: no-preference) {
+    dialog.sheet[open] { animation: rise 180ms ease-out; }
+    @keyframes rise { from { transform: translateY(24px); opacity: 0.6; } to { transform: none; opacity: 1; } }
+  }
+  .sheet-inner { padding: 1.25rem 1.125rem calc(1.25rem + env(safe-area-inset-bottom, 0px)); }
+  .sheet-head { margin-bottom: 0.75rem; }
+  .sheet-head .logo-box { height: 7rem; border: 1px solid var(--line); border-radius: 6px; margin-bottom: 0.75rem; }
+  .sheet-head .logo-box img { max-width: 85%; max-height: 6rem; }
+  .sheet-head h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.625rem;
+    line-height: 1.05;
+    margin: 0;
+  }
+  .sheet .rows { margin-bottom: 1rem; }
+  .sheet-group { font-family: var(--display); font-weight: 600; font-size: 1.25rem; margin: 0.75rem 0 0.25rem; }
+  .sheet .btn-primary { margin-top: 0.5rem; }
+
+  footer {
+    padding: 2rem 0 2.5rem;
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== CODE SCREEN ===================== -->
+<main id="gate" class="gate" hidden>
+  <div class="wrap">
+    <div class="gate-band" aria-hidden="true"></div>
+    <img class="gate-logo" src="logos/thg.png" alt="The Hays Group logo" onerror="this.remove()">
+    <h1 id="gateTitle"></h1>
+    <p data-t="gateHelp"></p>
+    <form id="gateForm" autocomplete="off" novalidate>
+      <label for="code" data-t="codeLabel"></label>
+      <input id="code" class="code-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-describedby="gateError">
+      <div id="gateError" class="gate-error" role="alert"></div>
+      <button class="btn-primary" type="submit" data-t="open"></button>
+    </form>
+    <div class="gate-lang"><button class="link-btn" type="button" data-lang-toggle></button></div>
+  </div>
+</main>
+
+<!-- ===================== HUB ===================== -->
+<div id="hub" hidden>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand" id="brand"></div>
+      <button class="link-btn" type="button" data-lang-toggle></button>
+    </header>
+
+    <a id="hazardLink" class="hazard" target="_blank" rel="noopener noreferrer">
+      <span class="hazard-stripe" aria-hidden="true"></span>
+      <span class="hazard-body">
+        <span class="hazard-title" data-t="reportTitle"></span>
+        <span class="hazard-sub" data-t="reportSub"></span>
+      </span>
+    </a>
+    <p class="hazard-note" data-t="reportNote"></p>
+
+    <section aria-labelledby="h-call">
+      <h2 id="h-call" data-t="callTitle"></h2>
+      <ul class="calls" id="calls"></ul>
+    </section>
+
+    <section aria-labelledby="h-co">
+      <h2 id="h-co" data-t="companiesTitle"></h2>
+      <p class="section-note" data-t="companiesNote"></p>
+      <ul class="companies" id="companies"></ul>
+    </section>
+
+    <footer>
+      <button class="link-btn" type="button" id="lockBtn" data-t="lock"></button>
+    </footer>
+  </div>
+</div>
+
+<dialog class="sheet" id="sheet" aria-labelledby="sheetTitle">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <div class="logo-box" id="sheetLogo"></div>
+      <h3 id="sheetTitle"></h3>
+    </div>
+    <div id="sheetDocs"></div>
+    <button class="btn-primary" type="button" id="sheetClose" data-t="close"></button>
+  </div>
+</dialog>
+
+<script>
+/* =====================================================================
+   EDIT THIS SECTION. Everything the page shows comes from CONFIG.
+   Leave a url as "" and the item shows as "Not posted yet".
+
+   Access code: the page stores a hash, not the code itself.
+   To change the code, open this page, then in the browser console run:
+       hubHash("1234")
+   and paste the result into codeHash below. (Current code: 0703)
+   Reminder: this is friction, not security. Only post documents you
+   would hand any employee on paper.
+   ===================================================================== */
+const CONFIG = {
+  orgName: "The Hays Group",
+  codeHash: "a146492a",
+  unlockHours: 12,
+
+  // Microsoft Forms link: "Report a Hazard – Anonymous" (Sergio's spec, Oct 14 2026).
+  // Settings: Anyone can respond. Email notifications to SRobles@HalHays.com.
+  reportFormUrl: "https://forms.cloud.microsoft/r/kCx7WpxTaZ",
+
+  contacts: [
+    {
+      label: { en: "Emergency", es: "Emergencia" },
+      name: "911",
+      phone: "911",
+      note: { en: "Someone in immediate danger: stop work, get people clear, and call 911. Then call your supervisor and Safety.",
+              es: "Si alguien está en peligro inmediato: pare el trabajo, aleje a la gente y llame al 911. Luego llame a su supervisor y a Seguridad." },
+      urgent: true
+    },
+    {
+      label: { en: "Corporate Safety Manager", es: "Gerente corporativo de seguridad" },
+      name: "Sergio Robles",
+      phone: "+16263662912",
+      note: { en: "Any injury, near miss, or safety question.",
+              es: "Cualquier lesión, casi accidente o pregunta de seguridad." }
+    }
+  ],
+
+  // Documents live in this repo. To update one, replace the PDF with the same name.
+  docsBase: "docs-b8742698/",
+
+  // Same files for every company (in docs-.../shared/).
+  shared: {
+    policies: [ ["wvpp", "workplace-violence-prevention-plan.pdf"] ],
+    forms: [
+      ["form17a", "form-17a-equipment-inspection.pdf"],
+      ["form24a", "form-24a-hot-work-permit.pdf"],
+      ["form18b", "form-18b-excavation-inspection-checklist.pdf"],
+      ["fall",    "fall-protection-inspection-checklist.pdf"],
+      ["csPermit","confined-space-permit-and-attendant-log.pdf"],
+      ["form19a", "form-19a-confined-space-evaluation-checklist.pdf"]
+    ]
+  },
+
+  // One tile per company. "dir" is the company folder inside docs-.../
+  // Every company has health-and-safety-manual.pdf and code-of-safe-practices.pdf.
+  // tailboard: true adds daily-safety-tailboard.pdf to that company's forms.
+  companies: [
+    { name: "The Hays Group", short: "THG", logo: "logos/thg.png", logoBg: "#262837", dir: "thg", tailboard: false },
+    { name: "Hal Hays Construction", short: "HHCI", logo: "logos/hhci.png", dir: "hhci", tailboard: true },
+    { name: "Cal Pacific Constructors", short: "CPCI", logo: "logos/cpci.png", dir: "cpci", tailboard: true },
+    { name: "Safe-Ex Utility Services", short: "Safe-Ex", logo: "logos/safeex.png", dir: "safeex", tailboard: false },
+    { name: "Straight Arrow Traffic Control", short: "SATC", logo: "logos/satc.png", dir: "satc", tailboard: false },
+    { name: "Golden State Subsurface Solutions", short: "GSSSI", logo: "logos/gsssi.png", dir: "gsssi", tailboard: false },
+    { name: "Heritage Transportation", short: "HTI", logo: "logos/hti.png", dir: "hti", tailboard: false },
+    { name: "Hays Ranches", short: "Hays Ranches", logo: "logos/haysranches.png", dir: "haysranches", tailboard: false },
+    { name: "BEC Electrical Contractors", short: "BEC", logo: "logos/bec.png", dir: "bec", tailboard: false },
+    { name: "Golden Bear Equipment Co.", short: "GBE", logo: "logos/gbe.png", dir: "gbe", tailboard: false }
+  ],
+
+};
+
+/* ===================== Text (English / Spanish) ===================== */
+const DOC_LABELS = {
+  manual:    { en: "Health and Safety Manual", es: "Manual de salud y seguridad" },
+  csp:       { en: "Code of Safe Practices", es: "Código de prácticas seguras" },
+  wvpp:      { en: "Workplace Violence Prevention Plan", es: "Plan de prevención de violencia en el trabajo" },
+  tailboard: { en: "Daily Safety Tailboard", es: "Charla diaria de seguridad (Tailboard)" },
+  form17a:   { en: "Equipment Inspection (Form 17A)", es: "Inspección de equipo (Formulario 17A)" },
+  form24a:   { en: "Hot Work Permit (Form 24A)", es: "Permiso de trabajo en caliente (Formulario 24A)" },
+  form18b:   { en: "Excavation Inspection Checklist (Form 18B)", es: "Lista de inspección de excavación (Formulario 18B)" },
+  fall:      { en: "Fall Protection Inspection Checklist", es: "Lista de inspección de protección contra caídas" },
+  csPermit:  { en: "Confined Space Permit and Attendant Log", es: "Permiso de espacio confinado y registro del asistente" },
+  form19a:   { en: "Confined Space Evaluation Checklist (Form 19A)", es: "Lista de evaluación de espacio confinado (Formulario 19A)" }
+};
+
+const T = {
+  en: {
+    gateTitle: "Field safety",
+    gateHelp: "Get the site code from your foreman or supervisor.",
+    codeLabel: "Site code",
+    open: "Open",
+    badCode: "That code didn't work. Check the code with your supervisor.",
+    shortCode: "Enter all 4 digits.",
+    langSwitch: "Español",
+    reportTitle: "Report a hazard",
+    reportSub: "Anonymous. You don't have to give your name.",
+    reportNote: "Someone in immediate danger? Stop work and call 911 first. This form isn't monitored 24/7.",
+    reportMissing: "The report form isn't set up yet. Call Corporate Safety at (626) 366-2912.",
+    callTitle: "Who to call",
+    call: "Call",
+    noPhone: "Number coming",
+    companiesTitle: "Company documents",
+    companiesNote: "Tap your company to see its safety manual, policies, and forms.",
+    policies: "Policies",
+    forms: "Forms",
+    notPosted: "Not posted yet",
+    lock: "Lock this page",
+    close: "Close"
+  },
+  es: {
+    gateTitle: "Seguridad en campo",
+    gateHelp: "Pida el código del sitio a su capataz o supervisor.",
+    codeLabel: "Código del sitio",
+    open: "Abrir",
+    badCode: "Ese código no funcionó. Confirme el código con su supervisor.",
+    shortCode: "Ingrese los 4 dígitos.",
+    langSwitch: "English",
+    reportTitle: "Reportar un peligro",
+    reportSub: "Anónimo. No tiene que dar su nombre.",
+    reportNote: "¿Alguien está en peligro inmediato? Pare el trabajo y llame al 911 primero. Este formulario no se revisa las 24 horas.",
+    reportMissing: "El formulario aún no está listo. Llame a Seguridad Corporativa al (626) 366-2912.",
+    callTitle: "A quién llamar",
+    call: "Llamar",
+    noPhone: "Número pendiente",
+    companiesTitle: "Documentos de la empresa",
+    companiesNote: "Toque su empresa para ver su manual de seguridad, políticas y formularios.",
+    policies: "Políticas",
+    forms: "Formularios",
+    notPosted: "Aún no publicado",
+    lock: "Bloquear esta página",
+    close: "Cerrar"
+  }
+};
+
+/* ===================== Logic ===================== */
+function hubHash(s) {
+  let x = 0x811c9dc5;
+  s = "hays-field-safety:" + s;
+  for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; }
+  return x.toString(16).padStart(8, "0");
+}
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+
+let lang = store.get("fs-lang") === "es" ? "es" : "en";
+const t = key => T[lang][key];
+const pick = obj => (obj && typeof obj === "object") ? (obj[lang] || obj.en) : obj;
+
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const k in (attrs || {})) {
+    if (k === "class") n.className = attrs[k];
+    else if (k === "text") n.textContent = attrs[k];
+    else n.setAttribute(k, attrs[k]);
+  }
+  kids.forEach(c => c && n.append(c));
+  return n;
+}
+
+function linkRow(title, sub, url) {
+  const inner = [el("span", { class: "row-title", text: title })];
+  if (sub) inner[0].append(el("span", { class: "row-sub", text: sub }));
+  if (url) return el("li", null, el("a", { href: url, target: "_blank", rel: "noopener noreferrer" }, ...inner));
+  const off = el("div", { class: "row-off" }, el("span", null, el("span", { text: title }),
+    el("span", { class: "row-sub", text: (sub ? sub + ". " : "") + t("notPosted") })));
+  return el("li", null, off);
+}
+
+function logoBox(target, co) {
+  target.replaceChildren();
+  target.style.background = co.logoBg || "";
+  const img = el("img", { src: co.logo, alt: co.name + " logo" });
+  img.onerror = () => { target.style.background = ""; target.replaceChildren(el("span", { class: "logo-fallback", text: co.short })); };
+  target.append(img);
+}
+
+function isUnlocked() {
+  const raw = store.get("fs-unlock");
+  if (!raw) return false;
+  const [hash, ts] = raw.split("|");
+  return hash === CONFIG.codeHash && Date.now() - Number(ts) < CONFIG.unlockHours * 3600e3;
+}
+
+function applyText() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach(n => n.textContent = t(n.dataset.t));
+  document.querySelectorAll("[data-lang-toggle]").forEach(b => {
+    b.textContent = t("langSwitch");
+    b.lang = lang === "en" ? "es" : "en";
+  });
+  document.getElementById("gateTitle").textContent = CONFIG.orgName + " " + t("gateTitle").toLowerCase();
+  document.getElementById("brand").textContent = CONFIG.orgName + " " + t("gateTitle").toLowerCase();
+  document.title = t("gateTitle");
+}
+
+function renderHub() {
+  const hazard = document.getElementById("hazardLink");
+  if (CONFIG.reportFormUrl) {
+    hazard.href = CONFIG.reportFormUrl;
+    hazard.removeAttribute("aria-disabled");
+  } else {
+    hazard.removeAttribute("href");
+    hazard.setAttribute("aria-disabled", "true");
+    hazard.onclick = () => alert(t("reportMissing"));
+  }
+
+  const calls = document.getElementById("calls");
+  calls.replaceChildren(...CONFIG.contacts.map(c => {
+    const txt = el("div", { class: "call-text" },
+      el("div", { class: "call-label", text: pick(c.label) }),
+      c.name && c.name !== c.phone ? el("div", { class: "call-name", text: c.name }) : null,
+      el("div", { class: "call-note", text: pick(c.note) }));
+    const btn = c.phone
+      ? el("a", { class: "call-btn" + (c.urgent ? " urgent" : ""), href: "tel:" + c.phone.replace(/[^\d+]/g, ""),
+                  "aria-label": t("call") + " " + pick(c.label), text: c.urgent ? c.phone : t("call") })
+      : el("span", { class: "call-note", text: t("noPhone") });
+    return el("li", null, txt, btn);
+  }));
+
+  const grid = document.getElementById("companies");
+  grid.replaceChildren(...CONFIG.companies.map((co, i) => {
+    const box = el("div", { class: "logo-box" });
+    logoBox(box, co);
+    const btn = el("button", { class: "company", type: "button" }, box, el("span", { class: "company-name", text: co.name }));
+    btn.addEventListener("click", () => openCompany(i));
+    return el("li", null, btn);
+  }));
+
+}
+
+let openIndex = -1;
+function openCompany(i) {
+  openIndex = i;
+  const co = CONFIG.companies[i];
+  logoBox(document.getElementById("sheetLogo"), co);
+  document.getElementById("sheetTitle").textContent = co.name;
+  const base = CONFIG.docsBase;
+  const row = (key, path) => linkRow(pick(DOC_LABELS[key]), "", base + path);
+  const policies = [
+    row("manual", co.dir + "/health-and-safety-manual.pdf"),
+    row("csp", co.dir + "/code-of-safe-practices.pdf"),
+    ...CONFIG.shared.policies.map(([k, f]) => row(k, "shared/" + f))
+  ];
+  const forms = [
+    ...(co.tailboard ? [row("tailboard", co.dir + "/daily-safety-tailboard.pdf")] : []),
+    ...CONFIG.shared.forms.map(([k, f]) => row(k, "shared/" + f))
+  ];
+  const box = document.getElementById("sheetDocs");
+  box.replaceChildren(
+    el("h4", { class: "sheet-group", text: t("policies") }), el("ul", { class: "rows" }, ...policies),
+    el("h4", { class: "sheet-group", text: t("forms") }), el("ul", { class: "rows" }, ...forms));
+  const d = document.getElementById("sheet");
+  if (typeof d.showModal === "function") d.showModal(); else d.setAttribute("open", "");
+  d.scrollTop = 0;
+}
+
+function show() {
+  const unlocked = isUnlocked();
+  document.getElementById("gate").hidden = unlocked;
+  document.getElementById("hub").hidden = !unlocked;
+  applyText();
+  if (unlocked) renderHub();
+  else setTimeout(() => document.getElementById("code").focus(), 50);
+}
+
+document.getElementById("gateForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const input = document.getElementById("code");
+  const err = document.getElementById("gateError");
+  const val = input.value.trim();
+  if (val.length < 4) { err.textContent = t("shortCode"); return; }
+  if (hubHash(val) === CONFIG.codeHash) {
+    store.set("fs-unlock", CONFIG.codeHash + "|" + Date.now());
+    err.textContent = "";
+    input.value = "";
+    show();
+    window.scrollTo(0, 0);
+  } else {
+    err.textContent = t("badCode");
+    input.value = "";
+    input.focus();
+  }
+});
+
+document.getElementById("code").addEventListener("input", e => {
+  e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
+  document.getElementById("gateError").textContent = "";
+  if (e.target.value.length === 4) document.getElementById("gateForm").requestSubmit();
+});
+
+document.querySelectorAll("[data-lang-toggle]").forEach(b => b.addEventListener("click", () => {
+  lang = lang === "en" ? "es" : "en";
+  store.set("fs-lang", lang);
+  applyText();
+  if (isUnlocked()) renderHub();
+  const d = document.getElementById("sheet");
+  if (d.open && openIndex > -1) openCompany(openIndex);
+}));
+
+document.getElementById("lockBtn").addEventListener("click", () => { store.del("fs-unlock"); show(); });
+
+const sheet = document.getElementById("sheet");
+document.getElementById("sheetClose").addEventListener("click", () => sheet.close ? sheet.close() : sheet.removeAttribute("open"));
+sheet.addEventListener("click", e => { if (e.target === sheet && sheet.close) sheet.close(); });
+
+show();
+</script>
+</body>
+</html>
